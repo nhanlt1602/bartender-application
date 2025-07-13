@@ -1,3 +1,48 @@
-./logs
-./config/config_prod.yml
-./app-launch
+# Logs
+logs/
+*.log
+*.log.*
+
+# App Launch
+app-launch/
+
+# Config files (production and sensitive configs)
+config/config_prod.yml
+
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Go specific
+*.test
+*.out
+go.work
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Backup files
+*.bak
+*.backup
