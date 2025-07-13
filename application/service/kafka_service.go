@@ -285,6 +285,8 @@ func (ks *KafkaService) bartenderPrinterAPI(filename string, isCallAPI bool, doc
 	ks.logger.Infof("API response: %s\n", string(body))
 	fmt.Println("========================================API - RESPONSE====================================================")
 	fmt.Println("API response:", string(body))
+	fmt.Println("========================================API - RESPONSE====================================================")
+
 	return nil
 }
 
