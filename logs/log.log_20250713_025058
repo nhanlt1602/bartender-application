@@ -1,1 +1,0 @@
-{"LEVEL":"INFO","TIME":"2025-07-13T02:50:58.256+0700","CALLER":"logger/log.go:193","FUNC":"kafka-consumer/application/logger.(*logger).Infof","MESSAGE":"[Consumer Application Started] Listening to server: kafka.inshasaki.com:30011,kafka.inshasaki.com:30012,kafka.inshasaki.com:30013, topic: qc.bom-product-bartender \n","UUID":"7d5d43ac-cdd7-4f00-9324-c77e04eab7ea"}
