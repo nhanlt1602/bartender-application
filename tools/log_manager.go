@@ -22,15 +22,19 @@ type LogFile struct {
 type LogManager struct {
 	LogDir     string
 	MaxAge     int // days
+	MaxHours   int // hours
+	MaxMinutes int // minutes
 	MaxBackups int
 	MaxSize    int64 // bytes
 }
 
 // NewLogManager creates a new log manager
-func NewLogManager(logDir string, maxAge, maxBackups int, maxSizeMB int) *LogManager {
+func NewLogManager(logDir string, maxAge, maxHours, maxMinutes, maxBackups int, maxSizeMB int) *LogManager {
 	return &LogManager{
 		LogDir:     logDir,
 		MaxAge:     maxAge,
+		MaxHours:   maxHours,
+		MaxMinutes: maxMinutes,
 		MaxBackups: maxBackups,
 		MaxSize:    int64(maxSizeMB) * 1024 * 1024, // Convert MB to bytes
 	}
@@ -71,7 +75,7 @@ func (lm *LogManager) CleanupOldFiles() error {
 		return err
 	}
 
-	cutoffTime := time.Now().AddDate(0, 0, -lm.MaxAge)
+	cutoffTime := time.Now().AddDate(0, 0, -lm.MaxAge).Add(-time.Duration(lm.MaxHours) * time.Hour).Add(-time.Duration(lm.MaxMinutes) * time.Minute)
 	var deletedCount int
 
 	for _, file := range files {
@@ -133,6 +137,8 @@ func (lm *LogManager) GetLogStats() error {
 	fmt.Printf("Total log files: %d\n", len(files))
 	fmt.Printf("Total size: %.2f MB\n", float64(totalSize)/(1024*1024))
 	fmt.Printf("Max age: %d days\n", lm.MaxAge)
+	fmt.Printf("Max hours: %d\n", lm.MaxHours)
+	fmt.Printf("Max minutes: %d\n", lm.MaxMinutes)
 	fmt.Printf("Max backups: %d\n", lm.MaxBackups)
 	fmt.Printf("Max size per file: %.2f MB\n", float64(lm.MaxSize)/(1024*1024))
 
@@ -151,10 +157,12 @@ func main() {
 	//maxBackups := 5 // 5 backup files
 	//maxSizeMB := 10 // 10 MB per file
 	maxAge := 0     // 0 days
+	maxHours := 0   // 0 hours
+	maxMinutes := 2 // 0 minutes
 	maxBackups := 5 // 5 backup files
 	maxSizeMB := 10 // 10 MB per file
 
-	lm := NewLogManager(logDir, maxAge, maxBackups, maxSizeMB)
+	lm := NewLogManager(logDir, maxAge, maxHours, maxMinutes, maxBackups, maxSizeMB)
 
 	fmt.Println("=== Log Manager ===")
 

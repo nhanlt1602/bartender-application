@@ -91,7 +91,7 @@ func getPath(cfg ConfigLogger) string {
 	} else {
 		path = path + "/"
 	}
-	return path + "log.log"
+	return path
 }
 
 func configure(cfg ConfigLogger) zapcore.WriteSyncer {
@@ -110,7 +110,7 @@ func configure(cfg ConfigLogger) zapcore.WriteSyncer {
 	}
 
 	w := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   path + "_" + timestamp,
+		Filename:   path + "_" + timestamp + ".log",
 		MaxSize:    cfg.MaxSize,    // megabytes
 		MaxBackups: cfg.MaxBackups, // number of backup files
 		MaxAge:     cfg.MaxAge,     // days
