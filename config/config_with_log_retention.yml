@@ -1,0 +1,36 @@
+# Kafka Configuration
+kafka:
+  bootstrap_servers: "localhost:9092"
+  group_id: "kafka-consumer-group"
+  auto_offset_reset: "earliest"
+
+# Consumer Topic Information
+consumer_topic_info:
+  topic_bom_bartender_printer: "bartender-printer-topic"
+
+# Bartender Printer API Configuration
+bartender_printer_api:
+  is_call_api: true
+  method: "POST"
+  url: "http://localhost:8080/api/print"
+  username: "admin"
+  password: "password"
+
+# File Share Path
+file_share_path: "D:/temp/exports"
+
+# Logger Configuration with Retention Settings
+logger:
+  mode: "development" # development or production
+  disable_caller: false
+  disable_stacktrace: false
+  encoding: "console" # console or json
+  level: "info" # debug, info, warn, error, dpanic, panic, fatal
+  zap_type: "sugar" # sugar or normal
+
+  # Log Retention Settings
+  max_age_days: 7 # Keep logs for 7 days (can be 1, 7, 30, 90, etc.)
+  max_size_mb: 10 # Max size per log file in MB
+  max_backups: 5 # Max number of backup files to keep
+  compress: true # Compress rotated log files
+  log_dir: "logs" # Custom log directory (optional, defaults to ./logs)

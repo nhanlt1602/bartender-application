@@ -1,0 +1,29 @@
+kafka:
+  bootstrap_servers: "kafka.inshasaki.com:30011,kafka.inshasaki.com:30012,kafka.inshasaki.com:30013"
+  group_id: "go-group"
+  auto_offset_reset: "earliest"
+consumer_topic_info:
+  topic_bom_bartender_printer: "qc.bom-product-bartender"
+bartender_printer_api:
+  is_call_api: true
+  method: "POST"
+  url: "http://127.0.0.1:5159/api/actions"
+  username: "User"
+  password: "hasaki123@"
+file_share_path: "D:\\hsk-bar\\data"
+
+# Logger Configuration with Retention Settings
+logger:
+  mode: "qa" # development or production
+  disable_caller: false
+  disable_stacktrace: false
+  encoding: "console" # console or json
+  level: "info" # debug, info, warn, error, dpanic, panic, fatal
+  zap_type: "sugar" # sugar or normal
+
+  # Log Retention Settings
+  max_age_days: 7 # Keep logs for 7 days (can be 1, 7, 30, 90, etc.)
+  max_size_mb: 10 # Max size per log file in MB
+  max_backups: 5 # Max number of backup files to keep
+  compress: true # Compress rotated log files
+  log_dir: "logs" # Custom log directory (optional, defaults to ./logs)

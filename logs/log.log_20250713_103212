@@ -1,0 +1,25 @@
+2025-07-13T10:32:12.931+0700	INFO	logger/log.go:217	kafka-consumer/application/logger.(*logger).Infof	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, [Consumer Application Started] Listening to server: kafka.inshasaki.com:30011,kafka.inshasaki.com:30012,kafka.inshasaki.com:30013, topic: qc.bom-product-bartender
+2025-07-13T10:32:49.721+0700	INFO	logger/log.go:217	kafka-consumer/application/logger.(*logger).Infof	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, Export file to path successfully!: D:\hsk-bar\data\test_20250713_103249.txt
+2025-07-13T10:32:50.511+0700	INFO	logger/log.go:217	kafka-consumer/application/logger.(*logger).Infof	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, Exported products to D:\hsk-bar\data\test_20250713_103249.txt at time: 2025-07-13 10:32:49.7218707 +0700 +07 m=+36.797785201
+2025-07-13T10:32:50.513+0700	INFO	logger/log.go:217	kafka-consumer/application/logger.(*logger).Infof	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, Call API Printer Successully: test_20250713_103249.txt
+2025-07-13T10:32:50.513+0700	INFO	logger/log.go:217	kafka-consumer/application/logger.(*logger).Infof	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, URL: http://127.0.0.1:5159/api/actions, Payload: ActionGroup:
+  Actions:
+    - TransformTextToRecordSetAction:
+        ConnectionSetup:
+          File: D:\hsk-bar\adult_vn\db.xml
+        Text:
+          File: D:\hsk-bar\data\test_20250713_103249.txt
+        RecordSetVariableName: datum
+    - PrintBTWAction:
+        DocumentFile: D:\hsk-bar\adult_vn\adult_vn_noprice.btw
+        Printer: HASAKI-RFID
+        SaveAfterPrint: false
+        Copies: 1
+        DatabaseOverrides:
+          - Name: db
+            Type: VariableName
+            DataSourceVariableName: datum
+
+2025-07-13T10:32:50.514+0700	ERROR	logger/log.go:249	kafka-consumer/application/logger.(*logger).Errorf	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, API call error: Post "http://127.0.0.1:5159/api/actions": dial tcp 127.0.0.1:5159: connectex: No connection could be made because the target machine actively refused it.
+2025-07-13T10:32:50.514+0700	ERROR	logger/log.go:249	kafka-consumer/application/logger.(*logger).Errorf	UUID:9bd68a81-f26f-49de-ad04-54ba9585c952, Error processing message: Post "http://127.0.0.1:5159/api/actions": dial tcp 127.0.0.1:5159: connectex: No connection could be made because the target machine actively refused it.
+2025-07-13T10:35:20.520+0700	INFO	logger/log.go:204	kafka-consumer/application/logger.(*logger).Info	Received shutdown signal, closing consumer...
