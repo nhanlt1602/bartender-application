@@ -11,6 +11,9 @@ qa:
 build-app-qa:
 	ENV=qa GOOS=windows GOARCH=amd64 go build -o app-launch/kafka-consumer-qa.exe -ldflags="-s -w" main.go
 
+build-app-qa-linux:
+	ENV=qa GOOS=linux GOARCH=amd64 go build -o app-launch/kafka-consumer-qa main.go
+
 build-gui-qa:
 	ENV=qa GOOS=windows GOARCH=amd64 go build -ldflags="-H windowsgui" -o app-launch/kafka-consumer-gui-qa.exe main.go
 
