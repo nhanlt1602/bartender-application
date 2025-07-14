@@ -56,9 +56,8 @@ func loadConfig(path string) (*Config, error) {
 }
 
 func GetConfigByEnv() (*Config, string, error) {
-	// Get config file based on environment
 	//env := os.Getenv("ENV")
-	env := "qa"
+	env := "production"
 
 	fmt.Printf("Environment: %s\n", env)
 

@@ -251,9 +251,8 @@ func (ks *KafkaService) bartenderPrinterAPI(filename string, isCallAPI bool, doc
 		return errors.New("templatePath is empty, cannot call Bartender Printer API")
 	}
 
-	ks.logger.Infof("URL: %s, Payload: %s\n", url, payload)
 	fmt.Println("===================================URL - PAYLOAD===================================================")
-	fmt.Printf("URL: %s, Payload: %s\n", url, payload)
+	ks.logger.Infof("URL: %s, Payload: %s\n", url, payload)
 	fmt.Println("===================================================================================================")
 	req, err := http.NewRequest(ks.config.BartenderPrinterAPI.Method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {

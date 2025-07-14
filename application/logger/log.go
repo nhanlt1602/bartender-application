@@ -110,7 +110,7 @@ func configure(cfg ConfigLogger) zapcore.WriteSyncer {
 	}
 
 	w := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   path + "_" + timestamp + ".log",
+		Filename:   path + timestamp + ".log",
 		MaxSize:    cfg.MaxSize,    // megabytes
 		MaxBackups: cfg.MaxBackups, // number of backup files
 		MaxAge:     cfg.MaxAge,     // days

@@ -1,0 +1,15 @@
+version: '3.8' # You can use other versions like '3.7' or '3.9' if preferred
+
+services:
+  redis:
+    image: redis:latest # Uses the latest official Redis image from Docker Hub
+    container_name: my-local-redis # A friendly name for your container
+    ports:
+      - "6379:6379" # Maps port 6379 on your host to port 6379 in the container
+    volumes:
+      - redis_data:/data # Persist Redis data to a named volume
+    command: redis-server --appendonly yes # Enables AOF persistence for data durability
+    restart: always # Always restart the container if it stops
+
+volumes:
+  redis_data: # Define the named volume
