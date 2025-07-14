@@ -11,10 +11,6 @@ import (
 )
 
 func main() {
-	// Load configuration
-	// Set env
-	os.Setenv("ENV", "development") // Set your environment here, e.g., "dev", "prod
-
 	con, _, err := config.GetConfigByEnv()
 	if err != nil {
 		panic("Failed to load config: " + err.Error())
