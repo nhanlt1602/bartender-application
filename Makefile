@@ -49,3 +49,7 @@ build:
 	set ENV=qa
 	go build -o app-launch/kafka-consumer-qc.exe -ldflags="-s -w" main.go
 
+
+upx-compress:
+	ENV=qa GOOS=windows GOARCH=amd64 go build -o app-launch/kafka-consumer-qa.exe -ldflags="-s -w" main.go
+	upx --best --ultra-brute .\app-launch\kafka-consumer-qa.exe .\app-launch\kafka-consumer-qa-upx.exe
