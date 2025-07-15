@@ -271,6 +271,7 @@ func (ks *KafkaService) bartenderPrinterAPI(filename string, isCallAPI bool, doc
 
 	resp, err := client.Do(req)
 	if err != nil {
+		ks.logger.Errorf("Send request to Bartender Printer API error: %v", err)
 		return err
 	}
 	defer func(Body io.ReadCloser) {
@@ -282,10 +283,74 @@ func (ks *KafkaService) bartenderPrinterAPI(filename string, isCallAPI bool, doc
 
 	body, _ := io.ReadAll(resp.Body)
 	ks.logger.Infof("API response: %s\n", string(body))
-	fmt.Println("========================================API - RESPONSE====================================================")
+	fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
 	fmt.Println("API response:", string(body))
-	fmt.Println("========================================API - RESPONSE====================================================")
+	fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
 
+	ks.checkBartenderPrinterAPIStatus(body)
+	return nil
+}
+
+func (ks *KafkaService) checkBartenderPrinterAPIStatus(body []byte) {
+	//BartenderApIResponse: {"Id":"c6027b37-c08e-4284-b36d-d35122fdf798","Status":"Running","StatusUrl":"http://127.0.0.1:5159/api/actions/c6027b37-c08e-4284-b36d-d35122fdf798"}
+	var bartenderApIResponse model.BartenderApIResponse
+	if err := json.Unmarshal(body, &bartenderApIResponse); err != nil {
+		ks.logger.Errorf("JSON unmarshal error: %v", err)
+		return
+	}
+
+	if bartenderApIResponse.Status == "Running" || bartenderApIResponse.Status == "WaitingToRun" ||
+		strings.Contains(bartenderApIResponse.Status, "run") {
+		ks.logger.Infof("Bartender Printer API is running: %s", bartenderApIResponse.Status)
+		// Call API to check the status of the job
+		err := ks.callBartenderPrinterAPIStatus(bartenderApIResponse.StatusUrl)
+		if err != nil {
+			ks.logger.Errorf("Error checking Bartender Printer API status: %v", err)
+			return
+		}
+	}
+
+}
+
+// checkBartenderPrinterAPIStatus checks the status of the job
+func (ks *KafkaService) callBartenderPrinterAPIStatus(statusUrl string) error {
+	// http://localhost:5159/api/actions/f39f0ab2-3db8-4ad0-a56a-6f3ba94c0410?MessageCount=200&MessageSeverity=Info&Variables=PrintJobStatus%2CResponse
+	buildUrl := statusUrl + "?MessageCount=200&MessageSeverity=Info&Variables=PrintJobStatus%2CResponse"
+
+	req, err := http.NewRequest(ks.config.BartenderTrackingScriptAPI.Method, buildUrl, nil)
+	if err != nil {
+		return err
+	}
+
+	username := ks.config.BartenderTrackingScriptAPI.Username
+	password := ks.config.BartenderTrackingScriptAPI.Password
+	req.Header.Set("accept", "application/json")
+	req.Header.Set("Content-Type", "text/vnd.yaml")
+	req.SetBasicAuth(username, password)
+
+	// Use NTLM authentication
+	client := http.Client{
+		Transport: ntlmssp.Negotiator{
+			RoundTripper: http.DefaultTransport,
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		ks.logger.Errorf("Send request tracking script to Bartender Printer API error: %v", err)
+		return err
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			ks.logger.Errorf("Failed to close response body: %s", err)
+		}
+	}(resp.Body)
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println("==============================API Tracking Script - RESPONSE============================")
+	ks.logger.Infof("API Tracking Script Response	: %s\n", string(body))
+	fmt.Println("==============================API Tracking Script - RESPONSE============================")
 	return nil
 }
 

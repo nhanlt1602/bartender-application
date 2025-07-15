@@ -13,3 +13,5 @@ services:
 
 volumes:
   redis_data: # Define the named volume
+
+# Docker-compose up -d: using for test redis service

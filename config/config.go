@@ -27,12 +27,21 @@ type BartenderPrinterAPIConfig struct {
 	Password  string `yaml:"password"`
 }
 
+type BartenderTrackingScriptAPI struct {
+	IsCallAPI bool   `yaml:"is_call_api"`
+	Method    string `yaml:"method"`
+	URL       string `yaml:"url"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+}
+
 type Config struct {
-	Kafka               KafkaConfig               `yaml:"kafka"`
-	ConsumerTopicInfo   ConsumerTopicInfo         `yaml:"consumer_topic_info"`
-	BartenderPrinterAPI BartenderPrinterAPIConfig `yaml:"bartender_printer_api"`
-	FileSharePath       string                    `yaml:"file_share_path"`
-	Logger              logger.ConfigLogger       `yaml:"logger"`
+	Kafka                      KafkaConfig                `yaml:"kafka"`
+	ConsumerTopicInfo          ConsumerTopicInfo          `yaml:"consumer_topic_info"`
+	BartenderPrinterAPI        BartenderPrinterAPIConfig  `yaml:"bartender_printer_api"`
+	BartenderTrackingScriptAPI BartenderTrackingScriptAPI `yaml:"bartender_tracking_status"`
+	FileSharePath              string                     `yaml:"file_share_path"`
+	Logger                     logger.ConfigLogger        `yaml:"logger"`
 }
 
 func loadConfig(path string) (*Config, error) {

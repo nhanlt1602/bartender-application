@@ -10,6 +10,12 @@ bartender_printer_api:
   url: "http://127.0.0.1:5159/api/actions"
   username: "User"
   password: "hasaki123@"
+bartender_tracking_status:
+  is_call_api: false
+  method: "GET"
+  url: "http://127.0.0.1:5159/api/actions"
+  username: "User"
+  password: "hasaki123@"
 file_share_path: "D:\\hsk-bar\\data"
 
 # Logger Configuration with Retention Settings

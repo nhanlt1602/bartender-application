@@ -10,4 +10,10 @@ bartender_printer_api:
   url: "http://127.0.0.1:5159/api/actions"
   username: "hahahaha"
   password: "hahahaha"
+bartender_tracking_status:
+  is_call_api: false
+  method: "GET"
+  url: "http://127.0.0.1:5159/api/actions"
+  username: "hahahaha"
+  password: "hahahaha"
 file_share_path: "/home/nhanlt/Documents/maverick_2025/bartender/data" # For linux, use forward slashes
