@@ -10,6 +10,10 @@ bartender_printer_api:
   url: "http://127.0.0.1:5159/api/actions"
   username: "User"
   password: "hasaki123@"
+  max_retries: 3
+  rate_limit: 10
+  worker_count: 3
+  queue_size: 100
 bartender_tracking_status:
   is_call_api: false
   method: "GET"

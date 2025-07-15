@@ -20,11 +20,15 @@ type KafkaConfig struct {
 }
 
 type BartenderPrinterAPIConfig struct {
-	IsCallAPI bool   `yaml:"is_call_api"`
-	Method    string `yaml:"method"`
-	URL       string `yaml:"url"`
-	Username  string `yaml:"username"`
-	Password  string `yaml:"password"`
+	IsCallAPI   bool   `yaml:"is_call_api"`
+	Method      string `yaml:"method"`
+	URL         string `yaml:"url"`
+	Username    string `yaml:"username"`
+	Password    string `yaml:"password"`
+	MaxRetries  int    `yaml:"max_retries"`
+	RateLimit   int    `yaml:"rate_limit"`
+	WorkerCount int    `yaml:"worker_count"`
+	QueueSize   int    `yaml:"queue_size"`
 }
 
 type BartenderTrackingScriptAPI struct {
@@ -66,7 +70,7 @@ func loadConfig(path string) (*Config, error) {
 
 func GetConfigByEnv() (*Config, string, error) {
 	//env := os.Getenv("ENV")
-	env := "production"
+	env := "qa"
 
 	fmt.Printf("Environment: %s\n", env)
 
