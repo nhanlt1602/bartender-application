@@ -432,7 +432,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by the Kafka Consumer Team**
+**Made with ❤️ by the HASAKI Clinic - Bom Dev Team**
 
 [![GitHub stars](https://img.shields.io/github/stars/your-repo/kafka-consumer?style=social)](https://github.com/your-repo/kafka-consumer)
 [![GitHub forks](https://img.shields.io/github/forks/your-repo/kafka-consumer?style=social)](https://github.com/your-repo/kafka-consumer)
