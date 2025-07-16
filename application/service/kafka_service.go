@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	facker "kafka-consumer/application/faker"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -54,6 +56,8 @@ type KafkaService struct {
 	ctx               context.Context
 	cancel            context.CancelFunc
 	wg                sync.WaitGroup
+	// Semaphore to ensure only 1 API call at a time
+	semaphore chan struct{}
 }
 
 // NewKafkaService creates a new KafkaService instance
@@ -86,9 +90,9 @@ func NewKafkaService(logger logger.ILogger, config *config.Config) *KafkaService
 
 	// Configure job queue and workers from config or use defaults
 	workerCount := config.BartenderPrinterAPI.WorkerCount
-	if workerCount <= 0 {
-		workerCount = 3 // Default 3 workers
-	}
+	//if workerCount <= 0 {
+	//	workerCount = 3 // Default 3 workers
+	//}
 
 	queueSize := config.BartenderPrinterAPI.QueueSize
 	if queueSize <= 0 {
@@ -106,10 +110,11 @@ func NewKafkaService(logger logger.ILogger, config *config.Config) *KafkaService
 		bartenderHealthy:  true,
 		ctx:               ctx,
 		cancel:            cancel,
+		semaphore:         make(chan struct{}, 1), // Only 1 API call at a time
 	}
 
-	// Start health check goroutine
-	ks.startHealthCheck()
+	//// Start health check goroutine
+	//ks.startHealthCheck()
 
 	// Start worker goroutines
 	ks.startWorkers()
@@ -179,12 +184,24 @@ func (ks *KafkaService) isHealthy() bool {
 
 // startWorkers starts worker goroutines to process print jobs
 func (ks *KafkaService) startWorkers() {
-	for i := 0; i < ks.workerCount; i++ {
+	if ks.config.BartenderPrinterAPI.SequentialMode {
+		// Sequential mode: only 1 worker to ensure 1 API call at a time
+		ks.logger.Info("Starting in SEQUENTIAL mode - only 1 API call at a time")
 		ks.wg.Add(1)
-		go func(workerID int) {
+		go func() {
 			defer ks.wg.Done()
-			ks.worker(workerID)
-		}(i)
+			ks.worker(0)
+		}()
+	} else {
+		// Parallel mode: multiple workers for concurrent API calls
+		ks.logger.Infof("Starting in PARALLEL mode with %d workers", ks.workerCount)
+		for i := 0; i < ks.workerCount; i++ {
+			ks.wg.Add(1)
+			go func(workerID int) {
+				defer ks.wg.Done()
+				ks.worker(workerID)
+			}(i)
+		}
 	}
 }
 
@@ -205,46 +222,55 @@ func (ks *KafkaService) worker(workerID int) {
 
 // processPrintJob processes a single print job with retry logic
 func (ks *KafkaService) processPrintJob(job *BartenderPrinterJob, workerID int) {
-	job.LastAttemptAt = time.Now()
-	ks.logger.Infof("Worker %d processing job: %s (attempt %d/%d)", workerID, job.Filename, job.RetryCount+1, job.MaxRetries+1)
+	ks.semaphore <- struct{}{} // Acquire semaphore at the start
+	defer func() { <-ks.semaphore }()
 
-	// Wait for rate limiter
-	if err := ks.rateLimiter.Wait(ks.ctx); err != nil {
-		ks.logger.Errorf("Rate limiter error: %v", err)
-		return
-	}
+	for {
+		job.LastAttemptAt = time.Now()
+		ks.logger.Infof("Worker %d processing job: %s (attempt %d/%d)", workerID, job.Filename, job.RetryCount+1, job.MaxRetries+1)
 
-	// Process the job
-	err := ks.callBartenderPrinterAPI(job.Filename, true, job.DocumentFilePath, job.ConnectionSetupPath)
-	if err != nil {
-		ks.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.Filename, err)
-
-		// Check if we can still retry
-		if job.RetryCount < job.MaxRetries {
-			job.RetryCount++
-			backoff := time.Duration(job.RetryCount) * 2 * time.Second
-			ks.logger.Infof("Retrying job %s in %v (attempt %d/%d)", job.Filename, backoff, job.RetryCount, job.MaxRetries)
-
-			// Schedule retry with backoff
-			go func() {
-				time.Sleep(backoff)
-				select {
-				case ks.jobQueue <- job:
-					ks.logger.Infof("Requeued job %s for retry %d", job.Filename, job.RetryCount)
-				default:
-					ks.logger.Errorf("Job queue full, dropping retry job: %s", job.Filename)
-				}
-			}()
-		} else {
-			// Max retries reached, log and stop
-			ks.logger.Errorf("Job %s FAILED PERMANENTLY after %d retries - STOPPING RETRY", job.Filename, job.MaxRetries)
-			// Job is now considered failed permanently, no more retries
+		// Wait for rate limiter
+		if err := ks.rateLimiter.Wait(ks.ctx); err != nil {
+			ks.logger.Errorf("Rate limiter error: %v", err)
 			return
 		}
-	} else {
-		// Success!
-		ks.logger.Infof("Worker %d successfully processed job: %s", workerID, job.Filename)
-		return
+
+		// Process the job
+		resp, err := ks.callBartenderPrinterAPI(job.Filename, true, job.DocumentFilePath, job.ConnectionSetupPath)
+		if err != nil {
+			ks.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.Filename, err)
+			// Check if we can still retry
+			if job.RetryCount < job.MaxRetries {
+				job.RetryCount++
+				backoff := time.Duration(job.RetryCount) * 2 * time.Second
+				ks.logger.Infof("Retrying job %s in %v (attempt %d/%d)", job.Filename, backoff, job.RetryCount, job.MaxRetries)
+
+				// Schedule retry with backoff
+				go func() {
+					time.Sleep(backoff)
+					select {
+					case ks.jobQueue <- job:
+						ks.logger.Infof("Requeued job %s for retry %d", job.Filename, job.RetryCount)
+					default:
+						ks.logger.Errorf("Job queue full, dropping retry job: %s", job.Filename)
+					}
+				}()
+			} else {
+				// Max retries reached, log and stop
+				ks.logger.Errorf("Job %s FAILED PERMANENTLY after %d retries - STOPPING RETRY", job.Filename, job.MaxRetries)
+				time.Sleep(5 * time.Second)
+				// Job is now considered failed permanently, no more retries
+				return
+			}
+		} else {
+			ks.logger.Infof("Worker %d successfully processed job: %s", workerID, job.Filename)
+			if resp != nil && resp.Status == "WaitingToRun" {
+				time.Sleep(15 * time.Second)
+			} else {
+				time.Sleep(5 * time.Second)
+			}
+			return
+		}
 	}
 }
 
@@ -350,18 +376,12 @@ func (ks *KafkaService) processMessage(msg *kafka.Message) error {
 	}
 	ks.logger.Infof("Exported products to %s at time: %s", filepath, now)
 
-	// Enqueue the print job
-	maxRetries := ks.config.BartenderPrinterAPI.MaxRetries
-	if maxRetries <= 0 {
-		maxRetries = 3 // Default max retries
-	}
-
 	job := &BartenderPrinterJob{
 		Filename:            filename,
 		DocumentFilePath:    documentFilePath,
 		ConnectionSetupPath: connectionSetupFile,
 		RetryCount:          0,
-		MaxRetries:          maxRetries,
+		MaxRetries:          ks.config.BartenderPrinterAPI.MaxRetries,
 		CreatedAt:           time.Now(),
 		LastAttemptAt:       time.Now(),
 	}
@@ -467,11 +487,31 @@ func (ks *KafkaService) exportProductDataToCsvFile(products []*model.Product, fi
 }
 
 // callBartenderPrinterAPI calls the Bartender Printer API with optimized client
-func (ks *KafkaService) callBartenderPrinterAPI(filename string, isCallAPI bool, documentFilePath string, connectionSetupPath string) error {
-	ks.logger.Infof("Call API Printer Successfully: %s", filename)
+func (ks *KafkaService) callBartenderPrinterAPI(filename string, isFakeCallApi bool, documentFilePath string, connectionSetupPath string) (*model.BartenderApIResponse, error) {
+	if isFakeCallApi {
+		resp := &http.Response{}
+		if rand.Intn(2) == 0 {
+			resp = facker.FakeAPICallRunning()
+		} else {
+			resp = facker.FakeAPICallWaitingToRun()
+		}
 
-	if !isCallAPI {
-		return nil
+		if resp.StatusCode != http.StatusOK {
+			return nil, errors.Errorf("Fake API call failed with status: %s", resp.Status)
+		}
+
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
+		ks.logger.Infof("API response: %s\n", string(body))
+		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
+
+		bartenderResponse := &model.BartenderApIResponse{}
+		if err := json.Unmarshal(body, &bartenderResponse); err != nil {
+			ks.logger.Errorf("JSON unmarshal error at Bartender API response: %v", err)
+			return nil, nil
+		}
+
+		return bartenderResponse, nil
 	}
 
 	url := ks.config.BartenderPrinterAPI.URL
@@ -498,7 +538,7 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isCallAPI bool,
             Type: VariableName
             DataSourceVariableName: datum`, connectionSetupPath, filename, documentFilePath)
 	} else {
-		return errors.New("templatePath is empty, cannot call Bartender Printer API")
+		return nil, errors.New("templatePath is empty, cannot call Bartender Printer API")
 	}
 
 	ks.logger.Infof("URL: %s, Payload: %s", url, payload)
@@ -509,7 +549,7 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isCallAPI bool,
 
 	req, err := http.NewRequestWithContext(ctx, ks.config.BartenderPrinterAPI.Method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("accept", "application/json")
 	req.Header.Set("Content-Type", "text/vnd.yaml")
@@ -519,8 +559,10 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isCallAPI bool,
 	resp, err := ks.bartenderClient.Do(req)
 	if err != nil {
 		ks.logger.Errorf("Send request to Bartender Printer API error: %v", err)
-		return err
+		return nil, err
 	}
+	ks.logger.Infof("Call API Printer Successfully: %s", filename)
+
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -531,18 +573,24 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isCallAPI bool,
 	body, _ := io.ReadAll(resp.Body)
 	ks.logger.Infof("API response: %s", string(body))
 
+	bartenderResponse := &model.BartenderApIResponse{}
 	// Check response status
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("Bartender API returned error status: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("bartender API returned error status: %d, body: %s", resp.StatusCode, string(body))
 	} else {
 		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
 		ks.logger.Infof("API response: %s\n", string(body))
 		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
+		// Parse the response body
+		if err := json.Unmarshal(body, &bartenderResponse); err != nil {
+			ks.logger.Errorf("JSON unmarshal error at Bartender API response: %v", err)
+			return nil, nil
+		}
 	}
 
 	// Optionally check job status for monitoring
 	// ks.checkBartenderPrinterAPIStatus(body)
-	return nil
+	return bartenderResponse, nil
 }
 
 func (ks *KafkaService) checkBartenderPrinterAPIStatus(body []byte) {

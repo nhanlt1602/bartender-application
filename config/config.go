@@ -20,15 +20,16 @@ type KafkaConfig struct {
 }
 
 type BartenderPrinterAPIConfig struct {
-	IsCallAPI   bool   `yaml:"is_call_api"`
-	Method      string `yaml:"method"`
-	URL         string `yaml:"url"`
-	Username    string `yaml:"username"`
-	Password    string `yaml:"password"`
-	MaxRetries  int    `yaml:"max_retries"`
-	RateLimit   int    `yaml:"rate_limit"`
-	WorkerCount int    `yaml:"worker_count"`
-	QueueSize   int    `yaml:"queue_size"`
+	IsCallAPI      bool   `yaml:"is_call_api"`
+	Method         string `yaml:"method"`
+	URL            string `yaml:"url"`
+	Username       string `yaml:"username"`
+	Password       string `yaml:"password"`
+	MaxRetries     int    `yaml:"max_retries"`
+	RateLimit      int    `yaml:"rate_limit"`
+	WorkerCount    int    `yaml:"worker_count"`
+	QueueSize      int    `yaml:"queue_size"`
+	SequentialMode bool   `yaml:"sequential_mode"` // true: only 1 API call at a time, false: parallel mode
 }
 
 type BartenderTrackingScriptAPI struct {
