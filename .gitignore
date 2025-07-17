@@ -8,7 +8,7 @@ go.mod
 go.sum
 
 # App Launch
-app-launch/
+#app-launch/
 
 # Config files (production and sensitive configs)
 #config/config_prod.yml

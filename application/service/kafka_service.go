@@ -234,7 +234,7 @@ func (ks *KafkaService) processPrintJob(job *BartenderPrinterJob, workerID int) 
 		}
 
 		// Process the job
-		resp, err := ks.callBartenderPrinterAPI(job.Filename, true, job.DocumentFilePath, job.ConnectionSetupPath)
+		resp, err := ks.callBartenderPrinterAPI(job.Filename, false, job.DocumentFilePath, job.ConnectionSetupPath)
 		if err != nil {
 			ks.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.Filename, err)
 			// Check if we can still retry
@@ -363,7 +363,8 @@ func (ks *KafkaService) processMessage(msg *kafka.Message) error {
 	now := time.Now()
 	quantity := len(productPrinterMsg.Products)
 	fileFormat := constant.FileTypeTxt
-	filename := "test" + "_" + now.Format("20060102_150405") + "_" + strconv.Itoa(quantity) + "." + string(fileFormat)
+	randomTime := strconv.FormatInt(time.Now().UnixNano(), 10) // random string based on timestamp
+	filename := "test" + "_" + now.Format("20060102_150405") + "_" + randomTime + "_" + strconv.Itoa(quantity) + "." + string(fileFormat)
 	filepath := ks.config.FileSharePath + string(os.PathSeparator) + filename
 
 	ks.populateAndRemakeProducts(productPrinterMsg.Products)
@@ -658,7 +659,7 @@ func (ks *KafkaService) callBartenderPrinterAPIStatus(statusUrl string) error {
 func (ks *KafkaService) populateAndRemakeProducts(products []*model.Product) {
 	for _, p := range products {
 		if ks.config.IsUsedImgLocalPath {
-			fileName := ks.getGenderSizeAvailablePath(p.VNSize, p.Gender)
+			fileName := ks.getGenderSizeAvailablePath(p.USSize, p.Gender)
 			p.SizeAvailable = fileName
 		} else {
 			sizeAvailableBase64, err := ks.base64Encode(p.SizeAvailable)
@@ -703,19 +704,19 @@ func (ks *KafkaService) getConnectionFilePath(template string) (string, error) {
 	}
 }
 
-func (ks *KafkaService) getGenderSizeAvailablePath(vnSize string, gender string) string {
+func (ks *KafkaService) getGenderSizeAvailablePath(usSize string, gender string) string {
 	switch strings.ToLower(gender) {
 	case string(constant.GenderTypeWomen), string(constant.GenderTypeMen):
-		return ks.getAdultSizeAvailablePath(vnSize)
+		return ks.getAdultSizeAvailablePath(usSize)
 	case string(constant.GenderTypeKid):
-		return ks.getKidSizeAvailablePath(vnSize)
+		return ks.getKidSizeAvailablePath(usSize)
 	default:
 		return ""
 	}
 }
 
-func (ks *KafkaService) getAdultSizeAvailablePath(vnSize string) string {
-	switch strings.ToLower(vnSize) {
+func (ks *KafkaService) getAdultSizeAvailablePath(usSize string) string {
+	switch strings.ToLower(usSize) {
 	case string(constant.AdultSizeAvailableXS):
 		return "adult_xs.pdf"
 	case string(constant.AdultSizeAvailableS):
@@ -735,8 +736,8 @@ func (ks *KafkaService) getAdultSizeAvailablePath(vnSize string) string {
 	}
 }
 
-func (ks *KafkaService) getKidSizeAvailablePath(vnSize string) string {
-	switch strings.ToLower(vnSize) {
+func (ks *KafkaService) getKidSizeAvailablePath(usSize string) string {
+	switch strings.ToLower(usSize) {
 	case string(constant.KidSizeAvailable3T):
 		return "kids_3t.pdf"
 	case string(constant.KidSizeAvailable4T):

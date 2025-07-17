@@ -73,7 +73,7 @@ func loadConfig(path string) (*Config, error) {
 
 func GetConfigByEnv() (*Config, string, error) {
 	//env := os.Getenv("ENV")
-	env := "qa"
+	env := "production" // Default to production for testing purposes
 
 	fmt.Printf("Environment: %s\n", env)
 
