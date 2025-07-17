@@ -1,0 +1,26 @@
+kafka:
+  bootstrap_servers: "prod-kafka01.inshasaki.com:9092,prod-kafka02.inshasaki.com:9092,prod-kafka03.inshasaki.com:9092"
+  group_id: "go-group"
+  auto_offset_reset: "earliest"
+consumer_topic_info:
+  topic_bom_bartender_printer: "prod.bom-product-bartender"
+bartender_printer_api:
+  is_call_api: false
+  method: "POST"
+  url: "http://127.0.0.1:5159/api/actions"
+  username: "User"
+  password: "hasaki123@"
+  max_retries: 0
+  rate_limit: 50
+  worker_count: 1
+  queue_size: 500
+  sequential_mode: true
+bartender_tracking_status:
+  is_call_api: false
+  method: "GET"
+  url: "http://127.0.0.1:5159/api/actions"
+  username: "User"
+  password: "hasaki123@"
+file_share_path: "D:\\hsk-bar\\data"
+file_size_available_path: "D:\\hsk-bar\\data\\size_available"
+is_used_img_local_path: true # false we will convert file to base64
