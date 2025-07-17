@@ -37,5 +37,12 @@ func main() {
 	<-signalChan
 
 	l.Info("Received shutdown signal, closing consumer...")
+
+	// Gracefully close the Kafka service
+	if err := kafkaService.Close(); err != nil {
+		l.Errorf("Error closing Kafka service: %v", err)
+	}
+
+	l.Info("Application shutdown complete")
 	os.Exit(0)
 }

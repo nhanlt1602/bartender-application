@@ -11,7 +11,7 @@ go.sum
 app-launch/
 
 # Config files (production and sensitive configs)
-config/config_prod.yml
+#config/config_prod.yml
 
 
 # Build artifacts

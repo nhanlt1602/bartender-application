@@ -20,6 +20,19 @@ type KafkaConfig struct {
 }
 
 type BartenderPrinterAPIConfig struct {
+	IsCallAPI      bool   `yaml:"is_call_api"`
+	Method         string `yaml:"method"`
+	URL            string `yaml:"url"`
+	Username       string `yaml:"username"`
+	Password       string `yaml:"password"`
+	MaxRetries     int    `yaml:"max_retries"`
+	RateLimit      int    `yaml:"rate_limit"`
+	WorkerCount    int    `yaml:"worker_count"`
+	QueueSize      int    `yaml:"queue_size"`
+	SequentialMode bool   `yaml:"sequential_mode"` // true: only 1 API call at a time, false: parallel mode
+}
+
+type BartenderTrackingScriptAPI struct {
 	IsCallAPI bool   `yaml:"is_call_api"`
 	Method    string `yaml:"method"`
 	URL       string `yaml:"url"`
@@ -28,11 +41,14 @@ type BartenderPrinterAPIConfig struct {
 }
 
 type Config struct {
-	Kafka               KafkaConfig               `yaml:"kafka"`
-	ConsumerTopicInfo   ConsumerTopicInfo         `yaml:"consumer_topic_info"`
-	BartenderPrinterAPI BartenderPrinterAPIConfig `yaml:"bartender_printer_api"`
-	FileSharePath       string                    `yaml:"file_share_path"`
-	Logger              logger.ConfigLogger       `yaml:"logger"`
+	Kafka                      KafkaConfig                `yaml:"kafka"`
+	ConsumerTopicInfo          ConsumerTopicInfo          `yaml:"consumer_topic_info"`
+	BartenderPrinterAPI        BartenderPrinterAPIConfig  `yaml:"bartender_printer_api"`
+	BartenderTrackingScriptAPI BartenderTrackingScriptAPI `yaml:"bartender_tracking_status"`
+	FileSharePath              string                     `yaml:"file_share_path"`
+	FileSizeAvailablePath      string                     `yaml:"file_size_available_path"`
+	IsUsedImgLocalPath         bool                       `yaml:"is_used_img_local_path"`
+	Logger                     logger.ConfigLogger        `yaml:"logger"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -57,7 +73,7 @@ func loadConfig(path string) (*Config, error) {
 
 func GetConfigByEnv() (*Config, string, error) {
 	//env := os.Getenv("ENV")
-	env := "production"
+	env := "qa"
 
 	fmt.Printf("Environment: %s\n", env)
 
