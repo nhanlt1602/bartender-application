@@ -234,7 +234,7 @@ func (ks *KafkaService) processPrintJob(job *BartenderPrinterJob, workerID int) 
 		}
 
 		// Process the job
-		resp, err := ks.callBartenderPrinterAPI(job.Filename, true, job.DocumentFilePath, job.ConnectionSetupPath)
+		resp, err := ks.callBartenderPrinterAPI(job.Filename, false, job.DocumentFilePath, job.ConnectionSetupPath)
 		if err != nil {
 			ks.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.Filename, err)
 			// Check if we can still retry
@@ -569,7 +569,6 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isFakeCallApi b
 	}(resp.Body)
 
 	body, _ := io.ReadAll(resp.Body)
-	ks.logger.Infof("API response: %s", string(body))
 
 	bartenderResponse := &model.BartenderApIResponse{}
 	// Check response status
@@ -578,6 +577,7 @@ func (ks *KafkaService) callBartenderPrinterAPI(filename string, isFakeCallApi b
 	} else {
 		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
 		ks.logger.Infof("API response: %s\n", string(body))
+		fmt.Printf("API response: %s\n", string(body))
 		fmt.Println("========================================API Bartender Printer - RESPONSE====================================================")
 		// Parse the response body
 		if err := json.Unmarshal(body, &bartenderResponse); err != nil {
