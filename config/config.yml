@@ -22,3 +22,5 @@ bartender_tracking_status:
   username: "hahahaha"
   password: "hahahaha"
 file_share_path: "/home/nhanlt/Documents/maverick_2025/bartender/data" # For linux, use forward slashes
+file_size_available_path: "D:\\hsk-bar\\data\\size_available"
+is_used_img_local_path: true # false we will convert file to base64

@@ -46,6 +46,8 @@ type Config struct {
 	BartenderPrinterAPI        BartenderPrinterAPIConfig  `yaml:"bartender_printer_api"`
 	BartenderTrackingScriptAPI BartenderTrackingScriptAPI `yaml:"bartender_tracking_status"`
 	FileSharePath              string                     `yaml:"file_share_path"`
+	FileSizeAvailablePath      string                     `yaml:"file_size_available_path"`
+	IsUsedImgLocalPath         bool                       `yaml:"is_used_img_local_path"`
 	Logger                     logger.ConfigLogger        `yaml:"logger"`
 }
 

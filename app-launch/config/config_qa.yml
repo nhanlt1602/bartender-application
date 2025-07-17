@@ -10,7 +10,7 @@ bartender_printer_api:
   url: "http://127.0.0.1:5159/api/actions"
   username: "User"
   password: "hasaki123@"
-  max_retries: 1
+  max_retries: 0
   rate_limit: 10
   worker_count: 1
   queue_size: 100
@@ -22,6 +22,8 @@ bartender_tracking_status:
   username: "User"
   password: "hasaki123@"
 file_share_path: "D:\\hsk-bar\\data"
+file_size_available_path: "D:\\hsk-bar\\data\\size_available"
+is_used_img_local_path: true # false we will convert file to base64
 
 # Logger Configuration with Retention Settings
 logger:
