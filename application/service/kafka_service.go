@@ -234,7 +234,7 @@ func (ks *KafkaService) processPrintJob(job *BartenderPrinterJob, workerID int) 
 		}
 
 		// Process the job
-		resp, err := ks.callBartenderPrinterAPI(job.Filename, false, job.DocumentFilePath, job.ConnectionSetupPath)
+		resp, err := ks.callBartenderPrinterAPI(job.Filename, true, job.DocumentFilePath, job.ConnectionSetupPath)
 		if err != nil {
 			ks.logger.Errorf("Worker %d failed to process job %s: %v", workerID, job.Filename, err)
 			// Check if we can still retry

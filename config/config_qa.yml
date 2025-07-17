@@ -11,9 +11,9 @@ bartender_printer_api:
   username: "User"
   password: "hasaki123@"
   max_retries: 0
-  rate_limit: 4
+  rate_limit: 20
   worker_count: 1
-  queue_size: 100
+  queue_size: 300
   sequential_mode: true  # true: only 1 API call at a time, false: parallel mode
 bartender_tracking_status:
   is_call_api: false
