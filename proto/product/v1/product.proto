@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package product.v1;
+option go_package = "./proto/product/v1;";
+
+message InsertProductRequest {
+    string name = 1;
+    string description = 2;
+    string category = 3;
+    double price = 4;
+    int64 stock_id = 5;
+}
+
+message InsertProductResponse {
+  int64 id = 1;
+}
+
+service ProductService {
+    // POST,
+    rpc InsertProduct(InsertProductRequest) returns (InsertProductResponse);
+}

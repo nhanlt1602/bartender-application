@@ -14,6 +14,8 @@ require (
 )
 
 require (
+	connectrpc.com/connect v1.18.1 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 )
