@@ -126,7 +126,7 @@ func GetLogger() *logger {
 	return Logger
 }
 
-// App Logger constructor
+// Newlogger App Logger constructor
 func Newlogger(cfg ConfigLogger) ILogger {
 	logLevel, exist := loggerLevelMap[cfg.Level]
 	if !exist {
